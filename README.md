@@ -1,6 +1,8 @@
-# TLI Frontend - Case Management System
+# TLI Web v1 - Client Portal
 
-React + TypeScript frontend for the TLI Case Management API with role-based access control.
+React + TypeScript client portal for general users to manage their cases. This is the primary user-facing application for case management.
+
+> **Note:** For the lawyer marketplace interface, see [tli-marketplace-v1](https://github.com/YOUR_USERNAME/tli-marketplace-v1)
 
 ## Features
 
@@ -22,7 +24,7 @@ React + TypeScript frontend for the TLI Case Management API with role-based acce
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd tli-frontend
+   cd tli-web-v1
    ```
 
 2. **Install dependencies**
