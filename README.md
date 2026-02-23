@@ -1,6 +1,71 @@
-# Getting Started with Create React App
+# TLI Frontend - Case Management System
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+React + TypeScript frontend for the TLI Case Management API with role-based access control.
+
+## Features
+
+- 🔐 Firebase Authentication
+- 👥 Role-based UI (General Users & Lawyers)
+- 📋 Case Management (List, Details, Create, Update)
+- 🔒 Protected Routes
+- 📱 Responsive Design (Ready for implementation)
+
+## Tech Stack
+
+- React 18 + TypeScript
+- Firebase Auth
+- Axios for API calls
+- Create React App
+
+## Setup
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd tli-frontend
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Configure environment variables**
+   ```bash
+   cp .env.example .env
+   ```
+   
+   Edit `.env` and add your Firebase configuration and API URL.
+
+4. **Start the development server**
+   ```bash
+   npm start
+   ```
+
+## Environment Variables
+
+Create a `.env` file in the root directory with the following variables:
+
+```
+REACT_APP_API_URL=http://localhost:8080
+REACT_APP_FIREBASE_API_KEY=your_api_key
+REACT_APP_FIREBASE_AUTH_DOMAIN=your_domain
+REACT_APP_FIREBASE_PROJECT_ID=your_project_id
+REACT_APP_FIREBASE_STORAGE_BUCKET=your_bucket
+REACT_APP_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+REACT_APP_FIREBASE_APP_ID=your_app_id
+```
+
+## Project Structure
+
+```
+src/
+├── config/          # Firebase configuration
+├── contexts/        # React contexts (Auth)
+├── services/        # API service layer
+├── types/           # TypeScript type definitions
+└── App.tsx          # Main app component
+```
 
 ## Available Scripts
 
