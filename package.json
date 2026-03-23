@@ -8,13 +8,12 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "deploy:cloudrun:build": "gcloud builds submit --tag gcr.io/PROJECT_ID/tli-web",
-    "deploy:cloudrun:run": "gcloud run deploy tli-web --image gcr.io/PROJECT_ID/tli-web --platform managed --region us-central1 --allow-unauthenticated",
-    "deploy:cloudrun": "npm run deploy:cloudrun:build && npm run deploy:cloudrun:run",
-    "deploy:firebase": "npm run build && firebase deploy --only hosting",
-    "deploy": "npm run deploy:firebase"
+    "deploy:staging": "git push origin main",
+    "deploy:production": "npm run build && firebase deploy --only hosting",
+    "deploy": "npm run deploy:production"
   },
   "dependencies": {
+    "firebase": "^12.10.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-router-dom": "^7.9.5"
