@@ -1,0 +1,15 @@
+specVersion: "v1"
+serviceId: "tli-web-v1"
+location: "us-central1"
+
+# Use singular 'schema' and remove the '-' dash below
+schema:
+  source: "./schema"
+  datasource:
+    postgresql:
+      database: "peak-bit-486121-n6-database"
+      cloudSql:
+        instanceId: "peak-bit-486121-n6-instance"
+        # schemaValidation: "STRICT" 
+
+connectorDirs: ["./example"]
