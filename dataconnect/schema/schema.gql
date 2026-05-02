@@ -1,0 +1,130 @@
+type Incident @table {
+  caseId: UUID!
+  case: Case! @ref(fields: "caseId") # FK to Case
+  description: String!
+  incidentDate: Date!
+  city: String
+  createdAt: Timestamp!
+  stateCode: String
+  state: StateCode @ref(fields: "stateCode") # FK to StateCode
+}
+
+type StateCode @table(key: ["code"]) {
+  code: String!
+  name: String!
+  active: Boolean!
+}
+
+type UserProfile @table(key: ["userId"]) {
+  userId: String! @default(expr: "auth.uid")
+  role: String!
+  fullName: String
+  phone: String
+  createdAt: Timestamp!
+  updatedAt: Timestamp!
+}
+
+type Case @table {
+  id: UUID! @default(expr: "uuidV4()")
+  userId: String!
+  user: UserProfile! @ref(fields: "userId") # FK to UserProfile
+  status: CaseStatus!
+  consentStore: Boolean
+  consentContact: Boolean
+  consentAt: Timestamp
+  createdAt: Timestamp!
+  updatedAt: Timestamp!
+}
+
+type Party @table {
+  id: UUID! @default(expr: "uuidV4()")
+  caseId: UUID!
+  case: Case! @ref(fields: "caseId") # FK to Case
+  role: PartyRole!
+  name: String!
+  insurerName: String
+  policyNumber: String
+  claimNumber: String
+  createdAt: Timestamp!
+}
+
+type Damage @table(key: ["caseId"]) {
+  caseId: UUID!
+  case: Case! @ref(fields: "caseId") # FK to Case
+  medicalBillsUsd: Float
+  daysMissed: Int
+  dailyRateUsd: Float
+  lostWagesUsd: Float
+}
+
+type CaseContact @table(key: ["caseId"]) {
+  caseId: UUID!
+  case: Case! @ref(fields: "caseId") # FK to Case
+  fullName: String
+  method: ContactMethod!
+  email: String
+  phone: String
+}
+
+type Document @table {
+  id: UUID! @default(expr: "uuidV4()")
+  caseId: UUID!
+  case: Case! @ref(fields: "caseId") # FK to Case
+  kind: DocKind!
+  originalFilename: String
+  storagePath: String
+  uploadedBy: String!
+  uploader: UserProfile! @ref(fields: "uploadedBy") # FK to UserProfile
+  uploadedAt: Timestamp!
+  notes: String
+}
+
+type LawyerClientAgreement @table {
+  id: UUID! @default(expr: "uuidV4()")
+  caseId: UUID!
+  case: Case! @ref(fields: "caseId") # FK to Case
+  lawyerId: String!
+  lawyer: UserProfile! @ref(fields: "lawyerId") # FK to UserProfile
+  message: String
+  createdAt: Timestamp!
+  updatedAt: Timestamp!
+}
+
+type LawyerClientAgreementFile @table {
+  id: UUID! @default(expr: "uuidV4()")
+  agreementId: UUID!
+  agreement: LawyerClientAgreement! @ref(fields: "agreementId") # FK to Agreement
+  fileName: String!
+  storagePath: String!
+  publicUrl: String
+  contentType: String
+  fileSize: Int
+  createdAt: Timestamp!
+}
+
+# Remove semicolons from Enums
+enum CaseStatus { 
+  OPEN 
+  CLOSED 
+  PENDING 
+}
+
+enum PartyRole { 
+  PLAINTIFF 
+  DEFENDANT 
+  INSURER 
+  WITNESS 
+}
+
+enum ContactMethod { 
+  EMAIL 
+  PHONE 
+  TEXT 
+}
+
+enum DocKind { 
+  MEDICAL_BILL 
+  POLICE_REPORT 
+  PHOTO 
+  OTHER 
+}

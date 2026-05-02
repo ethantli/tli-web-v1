@@ -46,13 +46,13 @@ function CaseDetails() {
       setCheckingSession(false)
     })
 
-    const subscription = onAuthStateChange((user) => {
+    const unsubscribe = onAuthStateChange((user) => {
       setSessionUser(user)
     })
 
     return () => {
       isMounted = false
-      subscription.unsubscribe()
+      unsubscribe()
     }
   }, [])
 
@@ -63,13 +63,14 @@ function CaseDetails() {
     try {
       const { data, error } = await getCaseDetails(caseId)
       if (error) throw new Error(error)
+      if (!data) throw new Error('Unable to load case details.')
       setCaseSummary(data.summary)
       setCaseInfo(data.caseInfo)
       setIncident(data.incident)
       setDamages(data.damages)
       setContact(data.contact)
-      setParties(data.parties)
-      setDocuments(data.documents)
+      setParties(data.parties || [])
+      setDocuments(data.documents || [])
       const normalizedAgreements =
         data.agreements?.map((item) => {
           const file = Array.isArray(item.lawyer_client_agreement_file)

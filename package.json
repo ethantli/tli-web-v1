@@ -13,6 +13,7 @@
     "deploy": "npm run deploy:production"
   },
   "dependencies": {
+    "@dataconnect/generated": "file:src/dataconnect-generated",
     "firebase": "^12.10.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",

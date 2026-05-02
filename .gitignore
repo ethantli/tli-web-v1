@@ -11,6 +11,10 @@
 # production
 /build
 
+# local agent skill packs
+.agents/
+skills-lock.json
+
 # misc
 .DS_Store
 .env.local
@@ -23,3 +27,20 @@ yarn-debug.log*
 yarn-error.log*
 
 .env
+
+# Ignore markdown by default
+*.md
+
+# Keep public/project docs
+!README.md
+!CHANGELOG.md
+!CONTRIBUTING.md
+!docs/**/*.md
+
+
+.firebase/*
+.claude/*
+.windsurf/*
+dataconnect/.dataconnect/
+*.generated.dart
+src/dataconnect-generated*

@@ -1,5 +1,13 @@
-import { apiClient } from '../lib/apiClient';
+import {
+  deleteObject,
+  getDownloadURL,
+  ref,
+  uploadBytes,
+} from 'firebase/storage';
+import { storage } from '../config/firebase';
 import type { FileUploadParams, FileUploadResponse, SignedUrlResponse } from '../types';
+
+const DEFAULT_FOLDER = 'case-docs';
 
 export function generateFileUuid(): string {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) {
@@ -8,26 +16,60 @@ export function generateFileUuid(): string {
   return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
+function extensionFor(fileName: string): string {
+  const ext = fileName.split('.').pop()?.trim();
+  return ext ? `.${ext.toLowerCase()}` : '';
+}
+
+function cleanSegment(value: string): string {
+  return value.replace(/^\/+|\/+$/g, '').replace(/[^\w.-]/g, '_');
+}
+
+function storagePath(folder: string, relativePath: string): string {
+  const safeFolder = cleanSegment(folder || DEFAULT_FOLDER);
+  const safePath = relativePath.replace(/^\/+/, '');
+  return `${safeFolder}/${safePath}`;
+}
+
 export async function uploadFile({
+  bucket = DEFAULT_FOLDER,
   file,
   userId,
   caseId,
 }: FileUploadParams): Promise<FileUploadResponse> {
   try {
-    const response = await apiClient.uploadFile('/files/upload', file, {
-      user_id: userId,
-      case_id: caseId,
+    const fileName = `${generateFileUuid()}${extensionFor(file.name)}`;
+    const relativePath = `${cleanSegment(userId)}/${cleanSegment(caseId)}/${fileName}`;
+    const fullPath = storagePath(bucket, relativePath);
+    const fileRef = ref(storage, fullPath);
+
+    await uploadBytes(fileRef, file, {
+      contentType: file.type || undefined,
+      customMetadata: {
+        originalName: file.name,
+        userId,
+        caseId,
+      },
     });
-    return { path: response.path, error: null };
+
+    return { path: relativePath, error: null };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to upload file';
     return { path: null, error: message };
   }
 }
 
-export async function removeFiles(paths: string[]): Promise<{ error: string | null }> {
+export async function removeFiles(
+  bucketOrPaths: string | string[],
+  maybePaths?: string[]
+): Promise<{ error: string | null }> {
+  const bucket = Array.isArray(bucketOrPaths) ? DEFAULT_FOLDER : bucketOrPaths;
+  const paths = Array.isArray(bucketOrPaths) ? bucketOrPaths : maybePaths || [];
+
   try {
-    await apiClient.post('/files/delete', { paths });
+    await Promise.all(
+      paths.map((path) => deleteObject(ref(storage, storagePath(bucket, path))))
+    );
     return { error: null };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to remove files';
@@ -36,17 +78,18 @@ export async function removeFiles(paths: string[]): Promise<{ error: string | nu
 }
 
 export async function createSignedUrl(
-  path: string,
-  expiresIn: number = 60
+  bucketOrPath: string,
+  pathOrExpires: string | number = 60,
+  _expiresIn: number = 60
 ): Promise<SignedUrlResponse> {
+  const bucket = typeof pathOrExpires === 'string' ? bucketOrPath : DEFAULT_FOLDER;
+  const path = typeof pathOrExpires === 'string' ? pathOrExpires : bucketOrPath;
+
   try {
-    const response = await apiClient.post<{ url: string }>('/files/signed-url', {
-      path,
-      expires_in: expiresIn,
-    });
-    return { url: response.url, error: null };
+    const url = await getDownloadURL(ref(storage, storagePath(bucket, path)));
+    return { url, error: null };
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to create signed URL';
+    const message = error instanceof Error ? error.message : 'Failed to create download URL';
     return { url: null, error: message };
   }
 }

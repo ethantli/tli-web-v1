@@ -1,4 +1,4 @@
-import { apiClient } from '../lib/apiClient';
+import { getStateCodes as getDataConnectStateCodes } from '@dataconnect/generated';
 import type { ApiResponse } from '../types';
 
 export interface StateCode {
@@ -8,8 +8,8 @@ export interface StateCode {
 
 export async function getStateCodes(): Promise<ApiResponse<StateCode[]>> {
   try {
-    const response = await apiClient.get<{ state_codes: StateCode[] }>('/state-codes');
-    const stateCodes = response.state_codes.map((item) => ({
+    const response = await getDataConnectStateCodes();
+    const stateCodes = response.data.stateCodes.map((item) => ({
       code: (item.code || '').toUpperCase(),
       name: item.name || '',
     }));

@@ -149,6 +149,7 @@ export interface ApiResponse<T> {
 }
 
 export interface FileUploadParams {
+  bucket?: string;
   file: File;
   userId: string;
   caseId: string;

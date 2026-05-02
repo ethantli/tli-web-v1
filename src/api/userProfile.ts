@@ -1,5 +1,8 @@
-import { apiClient } from '../lib/apiClient';
-import type { UserProfile, ApiResponse } from '../types';
+import {
+  ensureUserProfile as ensureDataConnectUserProfile,
+  getUserProfile as getDataConnectUserProfile,
+} from '@dataconnect/generated';
+import type { ApiResponse, UserProfile } from '../types';
 
 interface EnsureUserProfileParams {
   userId: string;
@@ -7,6 +10,14 @@ interface EnsureUserProfileParams {
   phone?: string;
   role?: string;
 }
+
+const nullableText = (value?: string) => {
+  const trimmed = value?.trim();
+  return trimmed || null;
+};
+
+const errorMessage = (error: unknown, fallback: string) =>
+  error instanceof Error ? error.message : fallback;
 
 export async function ensureUserProfile({
   userId,
@@ -21,27 +32,36 @@ export async function ensureUserProfile({
   const payload: UserProfile = {
     user_id: userId,
     role,
-    full_name: fullName?.trim() || null,
-    phone: phone?.trim() || null,
+    full_name: nullableText(fullName),
+    phone: nullableText(phone),
   };
 
   try {
-    await apiClient.post('/user-profile', payload);
+    await ensureDataConnectUserProfile({
+      fullName: payload.full_name,
+      phone: payload.phone,
+      role,
+    });
     return { data: payload, error: null };
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to create user profile';
-    return { error: message };
+    return { error: errorMessage(error, 'Failed to create user profile') };
   }
 }
 
 export async function getUserProfile(
   userId: string
 ): Promise<ApiResponse<Pick<UserProfile, 'full_name'>>> {
+  if (!userId) {
+    return { data: null, error: 'User ID is required' };
+  }
+
   try {
-    const response = await apiClient.get<Pick<UserProfile, 'full_name'>>(`/user-profile/${userId}`);
-    return { data: response, error: null };
+    const response = await getDataConnectUserProfile();
+    return {
+      data: { full_name: response.data.userProfile?.fullName ?? null },
+      error: null,
+    };
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to fetch user profile';
-    return { data: null, error: message };
+    return { data: null, error: errorMessage(error, 'Failed to fetch user profile') };
   }
 }
