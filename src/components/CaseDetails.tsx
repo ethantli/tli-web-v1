@@ -131,7 +131,7 @@ function CaseDetails() {
     setViewingAgreementId(agreement.id)
     setViewError('')
     try {
-      const { bucket, path } = normalizeStoragePath(file.storage_path, 'lawyer-client-agreements')
+      const { bucket, path } = normalizeStoragePath(file.storage_path, 'agreements')
 
       if (!path) throw new Error('Missing file path.')
       const { url, error } = await createSignedUrl(bucket, path, 60)
