@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type ChangeEvent, type KeyboardEvent } from 'react'
+import { LucideMic, LucideMicOff } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import {
   createCase,
@@ -47,8 +48,9 @@ interface ChatWidgetProps {
 }
 
 const welcomeMessageId = 'minerva-welcome'
+const minervaDisclaimer = "This is an automated assistant, not a licensed attorney."
 const defaultInitialMessage =
-  "Hi, I'm Minerva! I'm here to help you get started with your case. \n\n Before we begin: you're chatting with an automated assistant, not a licensed attorney. Your information is stored in a secure, HIPAA-compliant system and will never be sold or shared outside the matching process. \n What brings you here today?"
+  "Hi, I'm Minerva! \n\nI'm here to help you get started on your case. What brings you here today?\n\n"
 
 export function ChatWidget(props: ChatWidgetProps) {
   const { user, initialMessage, variant = 'embedded' } = props
@@ -62,7 +64,7 @@ export function ChatWidget(props: ChatWidgetProps) {
   ])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [isOpen, setIsOpen] = useState(true)
+  const [isOpen, setIsOpen] = useState(variant !== 'floating')
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [intakeDraft, setIntakeDraft] = useState<ChatIntakeDraft>(emptyChatIntakeDraft)
   const [intakeStep, setIntakeStep] = useState<ChatIntakeStep | null>(null)
@@ -72,6 +74,7 @@ export function ChatWidget(props: ChatWidgetProps) {
   const [filesAnalyzing, setFilesAnalyzing] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
   const pendingSubmitRef = useRef(false)
 
   const scrollToBottom = () => {
@@ -81,6 +84,21 @@ export function ChatWidget(props: ChatWidgetProps) {
   useEffect(() => {
     scrollToBottom()
   }, [messages])
+
+  useEffect(() => {
+    if (!user?.email) return
+    setIntakeDraft((prev) => prev.email ? prev : { ...prev, email: user.email })
+  }, [user?.email])
+
+  useEffect(() => {
+    const textarea = textareaRef.current
+    if (!textarea) return
+
+    textarea.style.height = '44px'
+    const nextHeight = Math.min(Math.max(textarea.scrollHeight, 44), 120)
+    textarea.style.height = `${nextHeight}px`
+    textarea.style.overflowY = textarea.scrollHeight > 120 ? 'auto' : 'hidden'
+  }, [input])
 
   const appendAssistantMessage = useCallback((content: string) => {
     const assistantMessage: Message = {
@@ -305,6 +323,7 @@ export function ChatWidget(props: ChatWidgetProps) {
 
       const result = applyIntakeAnswerAndAdvance(intakeDraft, activeIntakeStep, userMessage.content, {
         attachedFileCount: attachedFiles.length,
+        userEmail: user?.email,
       })
       setIntakeDraft(result.draft)
 
@@ -483,7 +502,7 @@ export function ChatWidget(props: ChatWidgetProps) {
             <div>
               <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 600 }}>Minerva</h3>
               <p style={{ margin: '4px 0 0 0', fontSize: '13px', opacity: 0.9 }}>
-                Legal assistant
+                Legal Assistant
               </p>
             </div>
             <button
@@ -534,16 +553,40 @@ export function ChatWidget(props: ChatWidgetProps) {
                     boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
                   }}
                 >
-                  <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.5' }}>{message.content}</p>
-                  <p
+                  <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.5', whiteSpace: 'pre-wrap' }}>{message.content}</p>
+                  <div
                     style={{
-                      margin: '8px 0 0 0',
-                      fontSize: '11px',
-                      opacity: 0.7,
+                      display: 'flex',
+                      alignItems: 'flex-end',
+                      justifyContent: message.id === welcomeMessageId && message.role === 'assistant' ? 'space-between' : 'flex-start',
+                      gap: '12px',
+                      marginTop: '8px',
                     }}
                   >
-                    {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </p>
+                    <p
+                      style={{
+                        margin: 0,
+                        fontSize: '11px',
+                        opacity: 0.7,
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                    {message.id === welcomeMessageId && message.role === 'assistant' && (
+                      <p
+                        style={{
+                          margin: 0,
+                          fontSize: '11px',
+                          lineHeight: '1.3',
+                          color: '#6b7280',
+                          textAlign: 'right',
+                        }}
+                      >
+                        {minervaDisclaimer}
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
@@ -639,7 +682,7 @@ export function ChatWidget(props: ChatWidgetProps) {
                 )}
               </div>
             )}
-            <div style={{ display: 'flex', gap: '12px' }}>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
               <button
                 type="button"
                 onClick={voiceInput.toggle}
@@ -658,11 +701,34 @@ export function ChatWidget(props: ChatWidgetProps) {
                   cursor: voiceInput.supported && !isLoading && !intakeSubmitting && !filesAnalyzing ? 'pointer' : 'not-allowed',
                   fontSize: '12px',
                   fontWeight: 700,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  lineHeight: 0,
                 }}
               >
-                {voiceInput.enabled ? 'Stop' : 'Voice'}
+                {voiceInput.enabled ? (
+                  <LucideMicOff
+                    aria-hidden="true"
+                    width={20}
+                    height={20}
+                    color="#b91c1c"
+                    strokeWidth={2.25}
+                    style={{ display: 'block', width: '20px', height: '20px', minWidth: '20px' }}
+                  />
+                ) : (
+                  <LucideMic
+                    aria-hidden="true"
+                    width={20}
+                    height={20}
+                    color="#1f2937"
+                    strokeWidth={2.25}
+                    style={{ display: 'block', width: '20px', height: '20px', minWidth: '20px' }}
+                  />
+                )}
               </button>
               <textarea
+                ref={textareaRef}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
@@ -670,14 +736,16 @@ export function ChatWidget(props: ChatWidgetProps) {
                 disabled={isLoading || intakeSubmitting || filesAnalyzing}
                 style={{
                   flex: 1,
-                  padding: '12px',
+                  minHeight: '44px',
+                  padding: '11px 12px',
                   border: '1px solid #d1d5db',
                   borderRadius: '8px',
                   fontSize: '14px',
+                  lineHeight: '20px',
                   resize: 'none',
-                  minHeight: '44px',
                   maxHeight: '120px',
                   fontFamily: 'inherit',
+                  overflowY: 'hidden',
                 }}
                 rows={1}
               />

@@ -38,6 +38,7 @@ export interface IntakeUpdateResult {
 
 export interface IntakeAnswerContext {
   attachedFileCount?: number;
+  userEmail?: string;
 }
 
 export const emptyChatIntakeDraft: ChatIntakeDraft = {
@@ -192,16 +193,22 @@ export function applyIntakeAnswer(
 
     case "contact": {
       if (isUnusableAnswer(trimmed)) {
-        return retry(next, "Please provide your real full name and email address.");
+        return retry(next, context.userEmail || next.email ? "Please provide your real full name." : "Please provide your real full name and email address.");
       }
       const contact = parseContact(trimmed);
-      if (!contact.email) return retry(next, "Please include a valid email address so the case can be tied to your account.");
-      if (!contact.fullName) return retry(next, "Please include your full name.");
+      const email = contact.email || next.email || context.userEmail || "";
+      if (contact.email) next.email = contact.email;
+      if (!email) return retry(next, "Please include a valid email address so the case can be tied to your account.");
+      if (!contact.fullName) {
+        next.email = email;
+        return retry(next, "Please include your full name.");
+      }
       if (contact.preferredContact === "phone" && !contact.phone) {
+        next.email = email;
         return retry(next, "Please include a phone number if calls or texts are your preferred contact method.");
       }
       next.fullName = contact.fullName;
-      next.email = contact.email;
+      next.email = email;
       next.phone = contact.phone;
       next.preferredContact = contact.preferredContact;
       return accept(next);

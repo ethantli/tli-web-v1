@@ -1,14 +1,22 @@
 import { Link } from 'react-router-dom'
+import heroLegalSupport from '../assets/hero-legal-support.png'
 
 function Landing() {
   return (
     <main className="landing">
-      <section id="home" className="hero full-height full-bleed">
+      <section
+        id="home"
+        className="hero full-height full-bleed"
+        style={{ '--hero-image': `url(${heroLegalSupport})` }}
+      >
         <div className="section">
-          <h1>Let Top Lawyers Compete for Your Case.</h1>
+          <h1>Let Top Lawyers Compete for Your Case</h1>
           <p className="lead">
-            TLI puts your case on a private, secure marketplace. Trusted law firms review it and send
-            you their best offers. You choose who to talk to, with no pressure and no sales calls.
+            Were you injured or affected by an incident?
+            Submit a secure intake detailing what happened. Trusted law firms review your case and send their best offers. You choose who to talk to, with no pressure and no sales calls.
+          </p>
+          <p>
+            
           </p>
           <div className="hero-actions">
             <Link className="btn accent" to="/base/intake">
@@ -20,40 +28,6 @@ function Landing() {
           </div>
         </div>
 
-        <div className="hero-card">
-          <h3>How the marketplace works</h3>
-          <ul className="hero-steps">
-            <li className="hero-step">
-              <span className="step-badge">1</span>
-              <div>
-                <strong>Submit your case</strong>
-                <span>
-                  Complete a secure intake that captures the facts, documents, and damages.
-                </span>
-              </div>
-            </li>
-            <li className="hero-step">
-              <span className="step-badge">2</span>
-              <div>
-                <strong>Firms review &amp; make offers</strong>
-                <span>
-                  Vetted trial firms see an anonymized profile and send their best pitch to represent
-                  you.
-                </span>
-              </div>
-            </li>
-            <li className="hero-step">
-              <span className="step-badge">3</span>
-              <div>
-                <strong>Compare and choose</strong>
-                <span>
-                  Review fees, experience, and strategy side-by-side, then pick the lawyer that feels
-                  right.
-                </span>
-              </div>
-            </li>
-          </ul>
-        </div>
       </section>
 
       <section id="how-it-works" className="section full-height">

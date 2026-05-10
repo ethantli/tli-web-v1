@@ -14,6 +14,7 @@ interface SpeechRecognitionInstance {
 }
 
 interface SpeechRecognitionEventLike {
+  resultIndex: number
   results: ArrayLike<{
     isFinal: boolean
     0: {
@@ -80,6 +81,8 @@ export function useVoiceInput({ onTranscript, onError }: UseVoiceInputOptions) {
 
     recognition.onresult = (event) => {
       const transcript = Array.from(event.results)
+        .slice(event.resultIndex)
+        .filter((result) => result.isFinal)
         .map((result) => result[0]?.transcript ?? '')
         .join(' ')
         .replace(/\s+/g, ' ')

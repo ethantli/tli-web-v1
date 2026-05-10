@@ -115,7 +115,7 @@ function AppShell() {
             Dashboard
           </Link>
           <Link to="/base/intake" className="btn accent slim" onClick={() => setNavOpen(false)}>
-            Start intake
+            Start Intake
           </Link>
         </div>
       </nav>
